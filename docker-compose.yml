@@ -1,0 +1,35 @@
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: pricing-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - pricing_redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: pricing-postgres
+    environment:
+      POSTGRES_DB: pricing_db
+      POSTGRES_USER: pricing
+      POSTGRES_PASSWORD: pricing
+    ports:
+      - "5432:5432"
+    volumes:
+      - pricing_pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pricing -d pricing_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pricing_pg_data:
+  pricing_redis_data:
